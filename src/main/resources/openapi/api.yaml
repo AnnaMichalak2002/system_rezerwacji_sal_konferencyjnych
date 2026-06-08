@@ -1,0 +1,1277 @@
+openapi: 3.0.3
+info:
+  title: Conference Rooms Reservation API
+  version: 1.0.0
+  description: >
+    API systemu rezerwacji sal konferencyjnych. Aplikacja umożliwia
+    przeglądanie sal, tworzenie i anulowanie rezerwacji oraz zarządzanie
+    salami konferencyjnymi. Uwierzytelnianie realizowane jest za pomocą
+    Basic Auth, a integralność żądania tworzenia rezerwacji dodatkowo
+    zabezpieczana jest nagłówkiem HMAC.
+
+servers:
+  - url: http://localhost:8080/api
+    description: Lokalny serwer aplikacji
+
+tags:
+  - name: users
+    description: Operacje dotyczące aktualnie zalogowanego użytkownika
+  - name: rooms
+    description: Operacje dotyczące sal konferencyjnych
+  - name: reservations
+    description: Operacje dotyczące rezerwacji sal konferencyjnych
+
+paths:
+  /users/me:
+    get:
+      tags:
+        - users
+      summary: Pobranie danych aktualnie zalogowanego użytkownika
+      description: >
+        Zwraca dane użytkownika aktualnie uwierzytelnionego w systemie.
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: Dane aktualnie zalogowanego użytkownika
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserResponse'
+        '401':
+          description: Brak uwierzytelnienia lub niepoprawne dane logowania
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  summary: Brak uwierzytelnienia
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: UNAUTHORIZED
+                    message: Uwierzytelnienie użytkownika jest wymagane.
+
+  /users/me/reservations:
+    get:
+      tags:
+        - users
+      summary: Pobranie listy rezerwacji aktualnie zalogowanego użytkownika
+      description: >
+        Zwraca listę rezerwacji przypisanych do aktualnie zalogowanego użytkownika.
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: Lista rezerwacji aktualnie zalogowanego użytkownika
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationListResponse'
+        '401':
+          description: Brak uwierzytelnienia lub niepoprawne dane logowania
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  summary: Brak uwierzytelnienia
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: UNAUTHORIZED
+                    message: Uwierzytelnienie użytkownika jest wymagane.
+
+  /rooms:
+    get:
+      tags:
+        - rooms
+      summary: Pobranie listy wszystkich sal konferencyjnych
+      description: >
+        Zwraca listę wszystkich sal konferencyjnych dostępnych w systemie.
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: Lista sal konferencyjnych
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomListResponse'
+        '401':
+          description: Brak uwierzytelnienia lub niepoprawne dane logowania
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  summary: Brak uwierzytelnienia
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: UNAUTHORIZED
+                    message: Uwierzytelnienie użytkownika jest wymagane.
+
+    post:
+      tags:
+        - rooms
+      summary: Dodanie nowej sali konferencyjnej
+      description: >
+        Dodaje nową salę konferencyjną do systemu. Operacja dostępna wyłącznie
+        dla użytkownika posiadającego rolę ADMIN.
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        description: Dane nowej sali konferencyjnej
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoomRequest'
+      responses:
+        '201':
+          description: Sala konferencyjna została dodana
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomResponse'
+        '400':
+          description: Niepoprawne dane wejściowe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidRequest:
+                  summary: Niepoprawne dane wejściowe
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: INVALID_REQUEST
+                    message: Przekazane dane sali konferencyjnej są niepoprawne.
+        '401':
+          description: Brak uwierzytelnienia lub niepoprawne dane logowania
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  summary: Brak uwierzytelnienia
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: UNAUTHORIZED
+                    message: Uwierzytelnienie użytkownika jest wymagane.
+        '403':
+          description: Brak uprawnień - operacja dostępna tylko dla ADMIN
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                forbidden:
+                  summary: Brak uprawnień
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: FORBIDDEN
+                    message: Użytkownik nie posiada uprawnień do wykonania tej operacji.
+        '409':
+          description: Konflikt danych
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                roomNameAlreadyExists:
+                  summary: Sala o takiej nazwie już istnieje
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: ROOM_NAME_ALREADY_EXISTS
+                    message: Sala o podanej nazwie już istnieje w systemie.
+
+  /rooms/{id}:
+    get:
+      tags:
+        - rooms
+      summary: Pobranie szczegółów wybranej sali konferencyjnej
+      description: >
+        Zwraca szczegóły sali konferencyjnej wskazanej przez identyfikator.
+      security:
+        - basicAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RoomId'
+      responses:
+        '200':
+          description: Szczegóły sali konferencyjnej
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomResponse'
+        '401':
+          description: Brak uwierzytelnienia lub niepoprawne dane logowania
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  summary: Brak uwierzytelnienia
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: UNAUTHORIZED
+                    message: Uwierzytelnienie użytkownika jest wymagane.
+        '404':
+          description: Sala konferencyjna nie została znaleziona
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                roomNotFound:
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: ROOM_NOT_FOUND
+                    message: Wskazana sala konferencyjna nie została znaleziona.
+
+    put:
+      tags:
+        - rooms
+      summary: Edycja danych sali konferencyjnej
+      description: >
+        Aktualizuje pełne dane wybranej sali konferencyjnej. Operacja dostępna
+        wyłącznie dla użytkownika z rolą ADMIN.
+      security:
+        - basicAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RoomId'
+      requestBody:
+        required: true
+        description: Nowe dane sali konferencyjnej
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRoomRequest'
+      responses:
+        '200':
+          description: Sala konferencyjna została zaktualizowana
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomResponse'
+        '400':
+          description: Niepoprawne dane wejściowe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidRequest:
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: INVALID_REQUEST
+                    message: Przekazane dane sali konferencyjnej są niepoprawne.
+        '401':
+          description: Brak uwierzytelnienia lub niepoprawne dane logowania
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: UNAUTHORIZED
+                    message: Uwierzytelnienie użytkownika jest wymagane.
+        '403':
+          description: Brak uprawnień - operacja dostępna tylko dla ADMIN
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                forbidden:
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: FORBIDDEN
+                    message: Użytkownik nie posiada uprawnień do wykonania tej operacji.
+        '404':
+          description: Sala konferencyjna nie została znaleziona
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                roomNotFound:
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: ROOM_NOT_FOUND
+                    message: Wskazana sala konferencyjna nie została znaleziona.
+        '409':
+          description: Konflikt danych
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                roomNameAlreadyExists:
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: ROOM_NAME_ALREADY_EXISTS
+                    message: Sala o podanej nazwie już istnieje w systemie.
+
+  /rooms/{id}/status:
+    patch:
+      tags:
+        - rooms
+      summary: Zmiana statusu sali konferencyjnej
+      description: >
+        Zmienia status sali konferencyjnej, np. na AVAILABLE, INACTIVE albo
+        UNDER_MAINTENANCE. Operacja dostępna wyłącznie dla ADMIN.
+      security:
+        - basicAuth: []
+      parameters:
+        - $ref: '#/components/parameters/RoomId'
+      requestBody:
+        required: true
+        description: Nowy status sali konferencyjnej
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRoomStatusRequest'
+      responses:
+        '200':
+          description: Status sali konferencyjnej został zmieniony
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomResponse'
+        '400':
+          description: Niepoprawne dane wejściowe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidStatus:
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: INVALID_REQUEST
+                    message: Przekazany status sali konferencyjnej jest niepoprawny.
+        '401':
+          description: Brak uwierzytelnienia lub niepoprawne dane logowania
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: UNAUTHORIZED
+                    message: Uwierzytelnienie użytkownika jest wymagane.
+        '403':
+          description: Brak uprawnień - operacja dostępna tylko dla ADMIN
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                forbidden:
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: FORBIDDEN
+                    message: Użytkownik nie posiada uprawnień do wykonania tej operacji.
+        '404':
+          description: Sala konferencyjna nie została znaleziona
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                roomNotFound:
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: ROOM_NOT_FOUND
+                    message: Wskazana sala konferencyjna nie została znaleziona.
+
+  /reservations:
+    get:
+      tags:
+        - reservations
+      summary: Pobranie listy wszystkich rezerwacji
+      description: >
+        Zwraca listę wszystkich rezerwacji w systemie. Operacja dostępna
+        wyłącznie dla użytkownika z rolą ADMIN.
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: Lista wszystkich rezerwacji
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationListResponse'
+        '401':
+          description: Brak uwierzytelnienia lub niepoprawne dane logowania
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  summary: Brak uwierzytelnienia
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: UNAUTHORIZED
+                    message: Uwierzytelnienie użytkownika jest wymagane.
+        '403':
+          description: Brak uprawnień - operacja dostępna tylko dla ADMIN
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                forbidden:
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: FORBIDDEN
+                    message: Użytkownik nie posiada uprawnień do wykonania tej operacji.
+
+    post:
+      tags:
+        - reservations
+      summary: Utworzenie nowej rezerwacji sali konferencyjnej
+      description: >
+        Tworzy nową rezerwację sali konferencyjnej. Operacja wymaga poprawnego
+        uwierzytelnienia oraz poprawnego podpisu HMAC przekazanego w nagłówku
+        X-HMAC-SIGNATURE.
+      security:
+        - basicAuth: []
+          hmacSignature: []
+      parameters:
+        - $ref: '#/components/parameters/HmacSignatureHeader'
+      requestBody:
+        required: true
+        description: Dane nowej rezerwacji sali konferencyjnej
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReservationRequest'
+      responses:
+        '201':
+          description: Rezerwacja została utworzona
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationResponse'
+        '400':
+          description: Niepoprawne dane wejściowe lub naruszenie reguł walidacji czasu
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidTimeRange:
+                  summary: Niepoprawny zakres czasu
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: INVALID_TIME_RANGE
+                    message: Moment rozpoczęcia rezerwacji musi być wcześniejszy niż moment jej zakończenia.
+                outsideWorkingHours:
+                  summary: Rezerwacja poza godzinami pracy
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: RESERVATION_OUTSIDE_WORKING_HOURS
+                    message: Rezerwacja została zaplanowana poza dniami roboczymi lub poza godzinami pracy organizacji.
+                invalidDuration:
+                  summary: Nieprawidłowy czas trwania
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: INVALID_RESERVATION_DURATION
+                    message: Czas trwania rezerwacji jest nieprawidłowy.
+                invalidRequest:
+                  summary: Niepoprawne dane wejściowe
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: INVALID_REQUEST
+                    message: Przekazane dane rezerwacji są niepoprawne.
+        '401':
+          description: Brak uwierzytelnienia lub niepoprawne dane logowania
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: UNAUTHORIZED
+                    message: Uwierzytelnienie użytkownika jest wymagane.
+        '403':
+          description: Brak uprawnień lub niepoprawny podpis HMAC
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                forbidden:
+                  summary: Brak uprawnień
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: FORBIDDEN
+                    message: Użytkownik nie posiada uprawnień do wykonania tej operacji.
+                invalidHmac:
+                  summary: Niepoprawny podpis HMAC
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: INVALID_HMAC_SIGNATURE
+                    message: Podpis HMAC jest niepoprawny lub niezgodny z treścią żądania.
+        '404':
+          description: Nie znaleziono sali lub użytkownika
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                roomNotFound:
+                  summary: Sala nie istnieje
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: ROOM_NOT_FOUND
+                    message: Wskazana sala konferencyjna nie została znaleziona.
+                userNotFound:
+                  summary: Użytkownik nie istnieje
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: USER_NOT_FOUND
+                    message: Wskazany użytkownik nie został znaleziony.
+        '409':
+          description: Konflikt biznesowy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                roomAlreadyBooked:
+                  summary: Sala jest już zajęta
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: ROOM_ALREADY_BOOKED
+                    message: Sala jest już zarezerwowana w wybranym terminie.
+                roomNotAvailable:
+                  summary: Sala niedostępna
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: ROOM_NOT_AVAILABLE
+                    message: Sala nie może zostać zarezerwowana, ponieważ nie ma statusu AVAILABLE.
+                userAlreadyHasReservation:
+                  summary: Użytkownik ma już inną rezerwację
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: USER_ALREADY_HAS_RESERVATION_AT_THIS_TIME
+                    message: Użytkownik posiada już inną aktywną rezerwację w tym samym przedziale czasu.
+
+  /reservations/{id}:
+    get:
+      tags:
+        - reservations
+      summary: Pobranie szczegółów jednej rezerwacji
+      description: >
+        Zwraca szczegóły jednej rezerwacji. Użytkownik z rolą USER może pobrać
+        własną rezerwację, a użytkownik z rolą ADMIN może pobrać dowolną rezerwację.
+      security:
+        - basicAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ReservationId'
+      responses:
+        '200':
+          description: Szczegóły rezerwacji
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationResponse'
+        '401':
+          description: Brak uwierzytelnienia lub niepoprawne dane logowania
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: UNAUTHORIZED
+                    message: Uwierzytelnienie użytkownika jest wymagane.
+        '403':
+          description: Brak uprawnień do przeglądania wskazanej rezerwacji
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                forbidden:
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: FORBIDDEN
+                    message: Użytkownik nie posiada uprawnień do przeglądania wskazanej rezerwacji.
+        '404':
+          description: Rezerwacja nie została znaleziona
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                reservationNotFound:
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: RESERVATION_NOT_FOUND
+                    message: Wskazana rezerwacja nie została znaleziona.
+
+  /reservations/{id}/cancel:
+    post:
+      tags:
+        - reservations
+      summary: Anulowanie rezerwacji
+      description: >
+        Anuluje rezerwację sali konferencyjnej. Użytkownik z rolą USER może
+        anulować własną rezerwację, a użytkownik z rolą ADMIN może anulować
+        dowolną rezerwację.
+      security:
+        - basicAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ReservationId'
+      responses:
+        '200':
+          description: Rezerwacja została anulowana
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReservationResponse'
+        '401':
+          description: Brak uwierzytelnienia lub niepoprawne dane logowania
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unauthorized:
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: UNAUTHORIZED
+                    message: Uwierzytelnienie użytkownika jest wymagane.
+        '403':
+          description: Brak uprawnień do anulowania wskazanej rezerwacji
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                forbidden:
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: FORBIDDEN
+                    message: Użytkownik nie posiada uprawnień do anulowania wskazanej rezerwacji.
+        '404':
+          description: Rezerwacja nie została znaleziona
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                reservationNotFound:
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: RESERVATION_NOT_FOUND
+                    message: Wskazana rezerwacja nie została znaleziona.
+        '409':
+          description: Konflikt biznesowy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                cannotBeCancelled:
+                  summary: Rezerwacja nie może zostać anulowana
+                  value:
+                    responseHeader:
+                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+                      sendDate: '2026-06-15T10:00:01Z'
+                    code: RESERVATION_CANNOT_BE_CANCELLED
+                    message: Nie można anulować rezerwacji, która już się rozpoczęła lub już się zakończyła.
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+      description: >
+        Uwierzytelnianie użytkownika przy użyciu służbowego adresu e-mail i hasła.
+
+    hmacSignature:
+      type: apiKey
+      in: header
+      name: X-HMAC-SIGNATURE
+      description: >
+        Nagłówek zawierający podpis HMAC zabezpieczający integralność żądania.
+
+  parameters:
+    RoomId:
+      name: id
+      in: path
+      required: true
+      description: Identyfikator sali konferencyjnej
+      schema:
+        type: string
+        format: uuid
+
+    ReservationId:
+      name: id
+      in: path
+      required: true
+      description: Identyfikator rezerwacji
+      schema:
+        type: string
+        format: uuid
+
+    HmacSignatureHeader:
+      name: X-HMAC-SIGNATURE
+      in: header
+      required: true
+      description: >
+        Podpis HMAC zapewniający integralność żądania tworzenia rezerwacji.
+      schema:
+        type: string
+
+  schemas:
+    RequestHeader:
+      type: object
+      description: Nagłówek żądania zawierający identyfikator i datę wysłania żądania.
+      required:
+        - requestId
+        - sendDate
+      properties:
+        requestId:
+          type: string
+          format: uuid
+          description: Unikalny identyfikator żądania.
+          example: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+        sendDate:
+          type: string
+          format: date-time
+          description: Data i godzina wysłania żądania w formacie ISO-8601.
+          example: '2026-06-15T10:00:00Z'
+
+    ResponseHeader:
+      type: object
+      description: Nagłówek odpowiedzi zawierający identyfikator żądania i datę wygenerowania odpowiedzi.
+      required:
+        - requestId
+        - sendDate
+      properties:
+        requestId:
+          type: string
+          format: uuid
+          description: Identyfikator żądania, do którego odnosi się odpowiedź.
+          example: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+        sendDate:
+          type: string
+          format: date-time
+          description: Data i godzina wygenerowania odpowiedzi w formacie ISO-8601.
+          example: '2026-06-15T10:00:01Z'
+
+    UserRole:
+      type: string
+      description: Rola użytkownika w systemie
+      enum:
+        - USER
+        - ADMIN
+
+    RoomStatus:
+      type: string
+      description: Status dostępności sali konferencyjnej
+      enum:
+        - AVAILABLE
+        - INACTIVE
+        - UNDER_MAINTENANCE
+
+    ReservationStatus:
+      type: string
+      description: Status rezerwacji
+      enum:
+        - ACTIVE
+        - CANCELLED
+
+    User:
+      type: object
+      description: Model aktualnie zalogowanego użytkownika systemu rezerwacji sal konferencyjnych.
+      required:
+        - id
+        - email
+        - firstName
+        - lastName
+        - role
+        - active
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unikalny identyfikator użytkownika.
+          example: 550e8400-e29b-41d4-a716-446655440000
+        email:
+          type: string
+          format: email
+          maxLength: 100
+          pattern: '^[A-Za-z0-9._%+-]+@yourfurniture\.pl$'
+          description: Unikalny służbowy adres e-mail użytkownika, wykorzystywany jako login do systemu. Adres musi należeć do domeny firmowej @yourfurniture.pl.
+          example: jan.kowalski@yourfurniture.pl
+        firstName:
+          type: string
+          minLength: 2
+          maxLength: 50
+          pattern: '^[A-Za-zÀ-žĄąĆćĘęŁłŃńÓóŚśŹźŻż]+$'
+          description: Imię użytkownika. Dozwolone są wyłącznie litery.
+          example: Jan
+        lastName:
+          type: string
+          minLength: 2
+          maxLength: 50
+          pattern: '^[A-Za-zÀ-žĄąĆćĘęŁłŃńÓóŚśŹźŻż]+$'
+          description: Nazwisko użytkownika. Dozwolone są wyłącznie litery.
+          example: Kowalski
+        role:
+          $ref: '#/components/schemas/UserRole'
+        active:
+          type: boolean
+          description: Informacja, czy konto użytkownika jest aktywne.
+          example: true
+
+    Room:
+      type: object
+      description: Model sali konferencyjnej.
+      required:
+        - id
+        - name
+        - capacity
+        - location
+        - floor
+        - status
+        - hasProjector
+        - hasWhiteboard
+        - hasDesktopComputer
+        - hasSpeakers
+        - hasVideoConferenceSystem
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unikalny identyfikator sali konferencyjnej.
+          example: 660e8400-e29b-41d4-a716-446655440001
+        name:
+          type: string
+          minLength: 2
+          maxLength: 50
+          description: Unikalna nazwa sali konferencyjnej.
+          example: Sala Konferencyjna A
+        capacity:
+          type: integer
+          minimum: 1
+          maximum: 100
+          description: Maksymalna liczba osób, które mogą przebywać w sali.
+          example: 12
+        location:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: Lokalizacja sali w budynku.
+          example: Budynek A, skrzydło wschodnie
+        floor:
+          type: integer
+          minimum: 0
+          maximum: 20
+          description: Piętro, na którym znajduje się sala.
+          example: 2
+        status:
+          $ref: '#/components/schemas/RoomStatus'
+        hasProjector:
+          type: boolean
+          description: Informacja, czy sala posiada projektor.
+          example: true
+        hasWhiteboard:
+          type: boolean
+          description: Informacja, czy sala posiada tablicę.
+          example: true
+        hasDesktopComputer:
+          type: boolean
+          description: Informacja, czy sala posiada komputer stacjonarny.
+          example: false
+        hasSpeakers:
+          type: boolean
+          description: Informacja, czy sala posiada głośniki.
+          example: true
+        hasVideoConferenceSystem:
+          type: boolean
+          description: Informacja, czy sala umożliwia prowadzenie wideokonferencji.
+          example: false
+
+    Reservation:
+      type: object
+      description: Model rezerwacji sali konferencyjnej.
+      required:
+        - id
+        - roomId
+        - userId
+        - meetingTitle
+        - startDateTime
+        - endDateTime
+        - status
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unikalny identyfikator rezerwacji.
+          example: 770e8400-e29b-41d4-a716-446655440002
+        roomId:
+          type: string
+          format: uuid
+          description: Identyfikator sali konferencyjnej. Klucz obcy wskazujący encję Room.
+          example: 660e8400-e29b-41d4-a716-446655440001
+        userId:
+          type: string
+          format: uuid
+          description: Identyfikator użytkownika tworzącego rezerwację. Klucz obcy wskazujący encję User.
+          example: 550e8400-e29b-41d4-a716-446655440000
+        meetingTitle:
+          type: string
+          minLength: 3
+          maxLength: 100
+          description: Tytuł lub temat spotkania.
+          example: Analiza ofert i wybór importera drewna
+        description:
+          type: string
+          maxLength: 500
+          description: Dodatkowy opis spotkania.
+          example: Optymalizacja łańcucha dostaw - wybór importera surowca drzewnego
+        startDateTime:
+          type: string
+          format: date-time
+          description: Data i godzina rozpoczęcia rezerwacji.
+          example: '2026-06-15T10:00:00'
+        endDateTime:
+          type: string
+          format: date-time
+          description: Data i godzina zakończenia rezerwacji. Wartość musi być późniejsza niż startDateTime.
+          example: '2026-06-15T11:30:00'
+        status:
+          $ref: '#/components/schemas/ReservationStatus'
+        createdAt:
+          type: string
+          format: date-time
+          description: Data i godzina utworzenia rezerwacji.
+          example: '2026-05-20T14:32:10'
+
+    RoomPayload:
+      type: object
+      description: Dane wejściowe sali konferencyjnej przekazywane w żądaniu.
+      required:
+        - name
+        - capacity
+        - location
+        - floor
+        - status
+        - hasProjector
+        - hasWhiteboard
+        - hasDesktopComputer
+        - hasSpeakers
+        - hasVideoConferenceSystem
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 50
+          description: Unikalna nazwa sali konferencyjnej.
+          example: Sala Konferencyjna A
+        capacity:
+          type: integer
+          minimum: 1
+          maximum: 100
+          description: Maksymalna liczba osób w sali konferencyjnej.
+          example: 12
+        location:
+          type: string
+          minLength: 2
+          maxLength: 100
+          description: Lokalizacja sali w budynku.
+          example: Budynek A, skrzydło wschodnie
+        floor:
+          type: integer
+          minimum: 0
+          maximum: 20
+          description: Piętro, na którym znajduje się sala.
+          example: 2
+        status:
+          $ref: '#/components/schemas/RoomStatus'
+        hasProjector:
+          type: boolean
+          description: Informacja, czy sala posiada projektor.
+          example: true
+        hasWhiteboard:
+          type: boolean
+          description: Informacja, czy sala posiada tablicę.
+          example: true
+        hasDesktopComputer:
+          type: boolean
+          description: Informacja, czy sala posiada komputer stacjonarny.
+          example: false
+        hasSpeakers:
+          type: boolean
+          description: Informacja, czy sala posiada głośniki.
+          example: true
+        hasVideoConferenceSystem:
+          type: boolean
+          description: Informacja, czy sala umożliwia prowadzenie wideokonferencji.
+          example: false
+
+    ReservationPayload:
+      type: object
+      description: Dane wejściowe nowej rezerwacji przekazywane w żądaniu.
+      required:
+        - roomId
+        - meetingTitle
+        - startDateTime
+        - endDateTime
+      properties:
+        roomId:
+          type: string
+          format: uuid
+          description: Identyfikator sali konferencyjnej, której dotyczy rezerwacja.
+          example: 660e8400-e29b-41d4-a716-446655440001
+        meetingTitle:
+          type: string
+          minLength: 3
+          maxLength: 100
+          description: Tytuł lub temat spotkania.
+          example: Analiza ofert i wybór importera drewna
+        description:
+          type: string
+          maxLength: 500
+          description: Dodatkowy opis spotkania.
+          example: Optymalizacja łańcucha dostaw - wybór importera surowca drzewnego
+        startDateTime:
+          type: string
+          format: date-time
+          description: Data i godzina rozpoczęcia rezerwacji.
+          example: '2026-06-15T10:00:00'
+        endDateTime:
+          type: string
+          format: date-time
+          description: Data i godzina zakończenia rezerwacji. Wartość musi być późniejsza niż startDateTime.
+          example: '2026-06-15T11:30:00'
+
+    CreateRoomRequest:
+      type: object
+      description: Żądanie utworzenia nowej sali konferencyjnej.
+      required:
+        - requestHeader
+        - room
+      properties:
+        requestHeader:
+          $ref: '#/components/schemas/RequestHeader'
+        room:
+          $ref: '#/components/schemas/RoomPayload'
+
+    UpdateRoomStatusRequest:
+      type: object
+      description: Żądanie zmiany statusu sali konferencyjnej.
+      required:
+        - requestHeader
+        - status
+      properties:
+        requestHeader:
+          $ref: '#/components/schemas/RequestHeader'
+        status:
+          $ref: '#/components/schemas/RoomStatus'
+
+    UpdateRoomRequest:
+      type: object
+      description: Żądanie pełnej aktualizacji danych sali konferencyjnej.
+      required:
+        - requestHeader
+        - room
+      properties:
+        requestHeader:
+          $ref: '#/components/schemas/RequestHeader'
+        room:
+          $ref: '#/components/schemas/RoomPayload'
+
+    CreateReservationRequest:
+      type: object
+      description: Żądanie utworzenia nowej rezerwacji sali konferencyjnej.
+      required:
+        - requestHeader
+        - reservation
+      properties:
+        requestHeader:
+          $ref: '#/components/schemas/RequestHeader'
+        reservation:
+          $ref: '#/components/schemas/ReservationPayload'
+
+    UserResponse:
+      type: object
+      description: Odpowiedź zawierająca dane aktualnie zalogowanego użytkownika.
+      required:
+        - responseHeader
+        - user
+      properties:
+        responseHeader:
+          $ref: '#/components/schemas/ResponseHeader'
+        user:
+          $ref: '#/components/schemas/User'
+
+    RoomResponse:
+      type: object
+      description: Odpowiedź zawierająca dane jednej sali konferencyjnej.
+      required:
+        - responseHeader
+        - room
+      properties:
+        responseHeader:
+          $ref: '#/components/schemas/ResponseHeader'
+        room:
+          $ref: '#/components/schemas/Room'
+
+    RoomListResponse:
+      type: object
+      description: Odpowiedź zawierająca listę sal konferencyjnych.
+      required:
+        - responseHeader
+        - rooms
+      properties:
+        responseHeader:
+          $ref: '#/components/schemas/ResponseHeader'
+        rooms:
+          type: array
+          description: Lista sal konferencyjnych
+          items:
+            $ref: '#/components/schemas/Room'
+
+    ReservationResponse:
+      type: object
+      description: Odpowiedź zawierająca dane jednej rezerwacji.
+      required:
+        - responseHeader
+        - reservation
+      properties:
+        responseHeader:
+          $ref: '#/components/schemas/ResponseHeader'
+        reservation:
+          $ref: '#/components/schemas/Reservation'
+
+    ReservationListResponse:
+      type: object
+      description: Odpowiedź zawierająca listę rezerwacji.
+      required:
+        - responseHeader
+        - reservations
+      properties:
+        responseHeader:
+          $ref: '#/components/schemas/ResponseHeader'
+        reservations:
+          type: array
+          description: Lista rezerwacji
+          items:
+            $ref: '#/components/schemas/Reservation'
+
+    ErrorResponse:
+      type: object
+      description: Model odpowiedzi błędu technicznego lub biznesowego.
+      required:
+        - responseHeader
+        - code
+        - message
+      properties:
+        responseHeader:
+          $ref: '#/components/schemas/ResponseHeader'
+        code:
+          type: string
+          description: Kod błędu technicznego lub biznesowego.
+          example: ROOM_ALREADY_BOOKED
+        message:
+          type: string
+          description: Opis błędu.
+          example: Sala jest już zarezerwowana w wybranym terminie.
