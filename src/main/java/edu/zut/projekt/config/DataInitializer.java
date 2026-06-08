@@ -96,8 +96,21 @@ public class DataInitializer {
             reservation2.setStatus(ReservationStatus.ACTIVE);
             reservation2.setCreatedAt(OffsetDateTime.now());
 
+            Reservation reservation3 = new Reservation();
+            //reservation2.setId(UUID.randomUUID());
+            reservation3.setId(UUID.fromString("00000000-0000-0000-0000-000000000003"));
+            reservation3.setRoomId(room2.getId());
+            reservation3.setUserId(USER_ID);
+            reservation3.setMeetingTitle("Spotkanie na CITO");
+            reservation3.setDescription("Wybor nowego projektu");
+            reservation3.setStartDateTime(OffsetDateTime.now());
+            reservation3.setEndDateTime(OffsetDateTime.now().plusMinutes(30));
+            reservation3.setStatus(ReservationStatus.ACTIVE);
+            reservation3.setCreatedAt(OffsetDateTime.now());
+
             reservationStore.save(reservation1);
             reservationStore.save(reservation2);
+            reservationStore.save(reservation3);
         };
     }
 }
