@@ -1,7 +1,6 @@
 package edu.zut.projekt.controller;
 
 import edu.zut.projekt.api.ReservationsApi;
-import edu.zut.projekt.config.DataInitializer;
 import edu.zut.projekt.exception.ConflictException;
 import edu.zut.projekt.exception.ForbiddenException;
 import edu.zut.projekt.exception.NotFoundException;
@@ -10,10 +9,9 @@ import edu.zut.projekt.model.ReservationListResponse;
 import edu.zut.projekt.model.ReservationResponse;
 import edu.zut.projekt.model.ReservationStatus;
 import edu.zut.projekt.model.ResponseHeader;
+import edu.zut.projekt.service.CurrentUserService;
 import edu.zut.projekt.store.ReservationStore;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.OffsetDateTime;
@@ -23,9 +21,11 @@ import java.util.UUID;
 public class ReservationsController implements ReservationsApi {
 
     private final ReservationStore reservationStore;
+    private final CurrentUserService currentUserService;
 
-    public ReservationsController(ReservationStore reservationStore) {
+    public ReservationsController(ReservationStore reservationStore, CurrentUserService currentUserService) {
         this.reservationStore = reservationStore;
+        this.currentUserService = currentUserService;
     }
 
     @Override
@@ -41,11 +41,9 @@ public class ReservationsController implements ReservationsApi {
 
     @Override
     public ResponseEntity<ReservationResponse> reservationsIdGet(UUID id) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        boolean isAdmin = isAdmin(authentication);
+        boolean isAdmin = currentUserService.isAdmin();
+        UUID currentUserId = currentUserService.getCurrentUserId();
 
-        UUID currentUserId = getCurrentUserId(email);
 
         Reservation reservation = reservationStore.findById(id)
                 .orElseThrow(() -> new NotFoundException(
@@ -69,11 +67,8 @@ public class ReservationsController implements ReservationsApi {
 
     @Override
     public ResponseEntity<ReservationResponse> reservationsIdCancelPost(UUID id) {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String email = authentication.getName();
-        boolean isAdmin = isAdmin(authentication);
-
-        UUID currentUserId = getCurrentUserId(email);
+        boolean isAdmin = currentUserService.isAdmin();
+        UUID currentUserId = currentUserService.getCurrentUserId();
 
         Reservation reservation = reservationStore.findById(id)
                 .orElseThrow(() -> new NotFoundException(
@@ -115,25 +110,12 @@ public class ReservationsController implements ReservationsApi {
     }
 
     private void ensureAdmin() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (!isAdmin(authentication)) {
+        if (!currentUserService.isAdmin()) {
             throw new ForbiddenException(
                     "FORBIDDEN",
                     "Uzytkownik nie posiada uprawnien do wykonania tej operacji."
             );
         }
-    }
-
-    private boolean isAdmin(Authentication authentication) {
-        return authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-    }
-
-    private UUID getCurrentUserId(String email) {
-        if ("admin@yourfurniture.pl".equalsIgnoreCase(email)) {
-            return DataInitializer.ADMIN_ID;
-        }
-        return DataInitializer.USER_ID;
     }
 
     private ResponseHeader buildResponseHeader() {
