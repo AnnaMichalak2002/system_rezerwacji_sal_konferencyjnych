@@ -557,7 +557,7 @@ paths:
                     code: UNAUTHORIZED
                     message: Uwierzytelnienie użytkownika jest wymagane.
         '403':
-          description: Brak uprawnień lub niepoprawny podpis HMAC
+          description: Brak uprawnień
           content:
             application/json:
               schema:
@@ -571,16 +571,8 @@ paths:
                       sendDate: '2026-06-15T10:00:01Z'
                     code: FORBIDDEN
                     message: Użytkownik nie posiada uprawnień do wykonania tej operacji.
-                invalidHmac:
-                  summary: Niepoprawny podpis HMAC
-                  value:
-                    responseHeader:
-                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
-                      sendDate: '2026-06-15T10:00:01Z'
-                    code: INVALID_HMAC_SIGNATURE
-                    message: Podpis HMAC jest niepoprawny lub niezgodny z treścią żądania.
         '404':
-          description: Nie znaleziono sali lub użytkownika
+          description: Sala nie została znaleziona
           content:
             application/json:
               schema:
@@ -594,14 +586,6 @@ paths:
                       sendDate: '2026-06-15T10:00:01Z'
                     code: ROOM_NOT_FOUND
                     message: Wskazana sala konferencyjna nie została znaleziona.
-                userNotFound:
-                  summary: Użytkownik nie istnieje
-                  value:
-                    responseHeader:
-                      requestId: aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
-                      sendDate: '2026-06-15T10:00:01Z'
-                    code: USER_NOT_FOUND
-                    message: Wskazany użytkownik nie został znaleziony.
         '409':
           description: Konflikt biznesowy
           content:
