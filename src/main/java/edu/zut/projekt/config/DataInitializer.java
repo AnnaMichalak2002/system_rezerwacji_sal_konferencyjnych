@@ -79,8 +79,8 @@ public class DataInitializer {
             reservation1.setUserId(USER_ID);
             reservation1.setMeetingTitle("Spotkanie projektowe");
             reservation1.setDescription("Omówienie postępu prac");
-            reservation1.setStartDateTime(OffsetDateTime.now().plusDays(1).withHour(10).withMinute(0).withSecond(0).withNano(0));
-            reservation1.setEndDateTime(OffsetDateTime.now().plusDays(1).withHour(11).withMinute(0).withSecond(0).withNano(0));
+            reservation1.setStartDateTime(OffsetDateTime.parse("2026-07-16T10:00:00Z"));
+            reservation1.setEndDateTime(OffsetDateTime.parse("2026-07-16T11:00:00Z"));
             reservation1.setStatus(ReservationStatus.ACTIVE);
             reservation1.setCreatedAt(OffsetDateTime.now());
 
@@ -91,8 +91,8 @@ public class DataInitializer {
             reservation2.setUserId(ADMIN_ID);
             reservation2.setMeetingTitle("Spotkanie administracyjne");
             reservation2.setDescription("Przegląd zasobów");
-            reservation2.setStartDateTime(OffsetDateTime.now().plusDays(2).withHour(12).withMinute(0).withSecond(0).withNano(0));
-            reservation2.setEndDateTime(OffsetDateTime.now().plusDays(2).withHour(13).withMinute(0).withSecond(0).withNano(0));
+            reservation2.setStartDateTime(OffsetDateTime.parse("2026-07-17T12:00:00Z"));
+            reservation2.setEndDateTime(OffsetDateTime.parse("2026-07-17T13:00:00Z"));
             reservation2.setStatus(ReservationStatus.ACTIVE);
             reservation2.setCreatedAt(OffsetDateTime.now());
 
