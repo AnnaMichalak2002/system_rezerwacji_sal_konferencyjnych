@@ -59,8 +59,8 @@ public class DataInitializer {
             room3.setId(UUID.fromString("00000000-0000-0000-0000-00000000000c"));
             room3.setName("Sala Konferencyjna C");
             room3.setCapacity(8);
-            room3.setLocation("Budynek B, parter");
-            room3.setFloor(0);
+            room3.setLocation("Budynek B");
+            room3.setFloor(2);
             room3.setStatus(RoomStatus.AVAILABLE);
             room3.setHasProjector(false);
             room3.setHasWhiteboard(true);

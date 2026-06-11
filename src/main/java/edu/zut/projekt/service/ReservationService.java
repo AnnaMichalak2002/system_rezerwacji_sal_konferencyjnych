@@ -30,16 +30,16 @@ public class ReservationService {
     private final CurrentUserService currentUserService;
     private final ReservationStore reservationStore;
     private final RoomStore roomStore;
-    //private final NotificationService notificationService;
+    private final NotificationService notificationService;
 
     public ReservationService(CurrentUserService currentUserService,
                               ReservationStore reservationStore,
-                              RoomStore roomStore) {
-                              //NotificationService notificationService) {
+                              RoomStore roomStore,
+                              NotificationService notificationService) {
         this.currentUserService = currentUserService;
         this.reservationStore = reservationStore;
         this.roomStore = roomStore;
-        //this.notificationService = notificationService;
+        this.notificationService = notificationService;
     }
 
     public Reservation createReservation(ReservationPayload payload) {
@@ -83,7 +83,7 @@ public class ReservationService {
         reservation.setCreatedAt(OffsetDateTime.now());
 
         reservationStore.save(reservation);
-        //notificationService.sendReservationConfirmation(currentUser, reservation);
+        notificationService.sendReservationConfirmation(currentUser, reservation, room);
 
         return reservation;
     }

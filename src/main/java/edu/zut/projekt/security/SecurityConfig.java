@@ -13,6 +13,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.beans.factory.annotation.Value;
 
 @Configuration
 @EnableMethodSecurity
@@ -20,6 +21,11 @@ public class SecurityConfig {
 
     private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
     private final RestAccessDeniedHandler restAccessDeniedHandler;
+    @Value("${app.test.user.email}")
+    private String testUserEmail;
+
+    @Value("${app.test.user.password}")
+    private String testUserPassword;
 
     public SecurityConfig(RestAuthenticationEntryPoint restAuthenticationEntryPoint,
                           RestAccessDeniedHandler restAccessDeniedHandler) {
@@ -70,7 +76,12 @@ public class SecurityConfig {
                 .roles("ADMIN")
                 .build();
 
-        return new InMemoryUserDetailsManager(user, admin);
+        UserDetails user2 = User.withUsername(testUserEmail)
+                .password(passwordEncoder.encode(testUserPassword))
+                .roles("USER")
+                .build();
+
+        return new InMemoryUserDetailsManager(user, admin, user2);
     }
 
     @Bean
