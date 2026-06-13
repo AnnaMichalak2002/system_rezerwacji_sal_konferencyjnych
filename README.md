@@ -1195,7 +1195,7 @@ Invoke-ReservationPost `
 ```
 
 ### Błąd 404
-**Oczekiwany kod odpowiedzi:** `404 ROOM_NOT_FOUND`  
+**Oczekiwany kod odpowiedzi:** `ROOM_NOT_FOUND`  
 **Opis:** Sala nie została znaleziona.
 
 ```powershell
