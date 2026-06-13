@@ -41,8 +41,6 @@ public class ReservationsController implements ReservationsApi {
 
     @Override
     public ResponseEntity<ReservationListResponse> reservationsGet() {
-        ensureAdmin();
-
         ReservationListResponse response = new ReservationListResponse();
         response.setResponseHeader(buildResponseHeader());
         response.setReservations(reservationStore.findAll());
@@ -139,15 +137,6 @@ public class ReservationsController implements ReservationsApi {
         response.setReservation(reservation);
 
         return ResponseEntity.status(201).body(response);
-    }
-
-    private void ensureAdmin() {
-        if (!currentUserService.isAdmin()) {
-            throw new ForbiddenException(
-                    "FORBIDDEN",
-                    "Uzytkownik nie posiada uprawnien do wykonania tej operacji."
-            );
-        }
     }
 
     private ResponseHeader buildResponseHeader() {
