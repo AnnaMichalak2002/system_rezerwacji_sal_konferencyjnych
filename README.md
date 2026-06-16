@@ -250,8 +250,6 @@ $response = Invoke-WebRequest `
     "Content-Type" = "application/json"
   } `
   -Body $body
-
-$response.Content
 ```
 
 ### Administrator — konflikt danych
@@ -1354,8 +1352,6 @@ $response = Invoke-WebRequest `
   -Uri "http://localhost:8080/reservations/00000000-0000-0000-0000-000000000011" `
   -Method GET `
   -Headers @{ Authorization = "Basic $base64Admin" }
-
-$response.Content
 ```
 
 ### Użytkownik — sukces
@@ -1380,8 +1376,6 @@ $response = Invoke-WebRequest `
   -Uri "http://localhost:8080/reservations/00000000-0000-0000-0000-000000000002" `
   -Method GET `
   -Headers @{ Authorization = "Basic $base64User" }
-
-$response.Content
 ```
 
 ### Użytkownik — brak rezerwacji
@@ -1393,8 +1387,6 @@ $response = Invoke-WebRequest `
   -Uri "http://localhost:8080/reservations/00000000-0000-0000-0000-000000000011" `
   -Method GET `
   -Headers @{ Authorization = "Basic $base64User" }
-
-$response.Content
 ```
 
 ### Błędny użytkownik
@@ -1441,7 +1433,6 @@ $response = Invoke-WebRequest `
   -Method POST `
   -Headers @{ Authorization = "Basic $base64Admin" }
 
-$response.Content
 ```
 
 ### Administrator — rezerwacja już się rozpoczęła lub zakończyła
@@ -1453,8 +1444,6 @@ $response = Invoke-WebRequest `
   -Uri "http://localhost:8080/reservations/00000000-0000-0000-0000-000000000003/cancel" `
   -Method POST `
   -Headers @{ Authorization = "Basic $base64Admin" }
-
-$response.Content
 ```
 
 ### Administrator — rezerwacja już miała status cancelled
@@ -1467,14 +1456,10 @@ $response = Invoke-WebRequest `
   -Method POST `
   -Headers @{ Authorization = "Basic $base64Admin" }
 
-$response.Content
-
 $response = Invoke-WebRequest `
   -Uri "http://localhost:8080/reservations/00000000-0000-0000-0000-000000000002/cancel" `
   -Method POST `
   -Headers @{ Authorization = "Basic $base64Admin" }
-
-$response.Content
 ```
 
 ### Użytkownik — sukces
@@ -1499,8 +1484,6 @@ $response = Invoke-WebRequest `
   -Uri "http://localhost:8080/reservations/00000000-0000-0000-0000-000000000002/cancel" `
   -Method POST `
   -Headers @{ Authorization = "Basic $base64User" }
-
-$response.Content
 ```
 
 ### Użytkownik — brak rezerwacji
@@ -1512,8 +1495,6 @@ $response = Invoke-WebRequest `
   -Uri "http://localhost:8080/reservations/00000000-0000-0000-0000-000000000011/cancel" `
   -Method POST `
   -Headers @{ Authorization = "Basic $base64User" }
-
-$response.Content
 ```
 
 ### Użytkownik — rezerwacja już się rozpoczęła lub zakończyła
@@ -1525,8 +1506,6 @@ $response = Invoke-WebRequest `
   -Uri "http://localhost:8080/reservations/00000000-0000-0000-0000-000000000003/cancel" `
   -Method POST `
   -Headers @{ Authorization = "Basic $base64User" }
-
-$response.Content
 ```
 
 ### Użytkownik — rezerwacja już miała status cancelled
@@ -1545,8 +1524,6 @@ $response = Invoke-WebRequest `
   -Uri "http://localhost:8080/reservations/00000000-0000-0000-0000-000000000001/cancel" `
   -Method POST `
   -Headers @{ Authorization = "Basic $base64User" }
-
-$response.Content
 ```
 
 ### Błędny użytkownik
