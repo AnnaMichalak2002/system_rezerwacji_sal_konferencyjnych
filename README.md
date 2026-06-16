@@ -959,8 +959,8 @@ $sendDate = "2026-06-16T10:00Z"
 $roomId = "00000000-0000-0000-0000-00000000000c"
 $meetingTitle = "Nowe spotkanie projektowe"
 $description = "Omowienie harmonogramu wdrozenia"
-$startDateTime = "2026-06-16T10:00Z"
-$endDateTime = "2026-06-16T11:00Z"
+$startDateTime = "2026-07-16T10:00Z"
+$endDateTime = "2026-07-16T11:00Z"
 
 $signature = Get-HmacSignature `
   -RequestId $requestId `
@@ -992,8 +992,8 @@ $sendDate = "2026-06-16T10:00Z"
 $roomId = "00000000-0000-0000-0000-00000000000c"
 $meetingTitle = "Zly zakres czasu"
 $description = "Test invalid time range"
-$startDateTime = "2026-06-16T12:00Z"
-$endDateTime = "2026-06-16T11:00Z"
+$startDateTime = "2026-07-16T12:00Z"
+$endDateTime = "2026-07-16T11:00Z"
 
 $signature = Get-HmacSignature `
   -RequestId $requestId `
@@ -1025,8 +1025,8 @@ $sendDate = "2026-06-16T10:00Z"
 $roomId = "00000000-0000-0000-0000-00000000000c"
 $meetingTitle = "Poza godzinami pracy"
 $description = "Test outside working hours"
-$startDateTime = "2026-06-16T19:00Z"
-$endDateTime = "2026-06-16T20:00Z"
+$startDateTime = "2026-07-16T19:00Z"
+$endDateTime = "2026-07-16T20:00Z"
 
 $signature = Get-HmacSignature `
   -RequestId $requestId `
@@ -1058,8 +1058,8 @@ $sendDate = "2026-06-16T10:00Z"
 $roomId = "00000000-0000-0000-0000-00000000000c"
 $meetingTitle = "Zly czas trwania"
 $description = "Test invalid duration"
-$startDateTime = "2026-06-16T10:05Z"
-$endDateTime = "2026-06-16T10:35Z"
+$startDateTime = "2026-07-16T10:05Z"
+$endDateTime = "2026-07-16T10:35Z"
 
 $signature = Get-HmacSignature `
   -RequestId $requestId `
@@ -1091,8 +1091,8 @@ $sendDate = "2026-06-16T10:00Z"
 $roomId = "00000000-0000-0000-0000-00000000000c"
 $meetingTitle = ""
 $description = "Test invalid request"
-$startDateTime = "2026-06-16T10:00Z"
-$endDateTime = "2026-06-16T11:00Z"
+$startDateTime = "2026-07-16T10:00Z"
+$endDateTime = "2026-07-16T11:00Z"
 
 $signature = Get-HmacSignature `
   -RequestId $requestId `
@@ -1145,8 +1145,8 @@ $sendDate = "2026-06-16T10:00Z"
 $roomId = "00000000-0000-0000-0000-00000000000c"
 $meetingTitle = "Test 401"
 $description = "Test unauthorized"
-$startDateTime = "2026-06-16T10:00Z"
-$endDateTime = "2026-06-16T11:00Z"
+$startDateTime = "2026-07-16T10:00Z"
+$endDateTime = "2026-07-16T11:00Z"
 
 $signature = Get-HmacSignature `
   -RequestId $requestId `
@@ -1179,8 +1179,8 @@ $sendDate = "2026-06-16T10:00Z"
 $roomId = "00000000-0000-0000-0000-00000000000c"
 $meetingTitle = "Zly HMAC"
 $description = "Test invalid hmac"
-$startDateTime = "2026-06-16T10:00Z"
-$endDateTime = "2026-06-16T11:00Z"
+$startDateTime = "2026-07-16T10:00Z"
+$endDateTime = "2026-07-16T11:00Z"
 
 Invoke-ReservationPost `
   -AuthBase64 $base64User `
@@ -1204,8 +1204,8 @@ $sendDate = "2026-06-16T10:00Z"
 $roomId = "99999999-9999-9999-9999-999999999999"
 $meetingTitle = "Sala nie istnieje"
 $description = "Test room not found"
-$startDateTime = "2026-06-16T10:00Z"
-$endDateTime = "2026-06-16T11:00Z"
+$startDateTime = "2026-07-16T10:00Z"
+$endDateTime = "2026-07-16T11:00Z"
 
 $signature = Get-HmacSignature `
   -RequestId $requestId `
@@ -1270,8 +1270,8 @@ $sendDate = "2026-06-16T10:00Z"
 $roomId = "00000000-0000-0000-0000-00000000000b"
 $meetingTitle = "Sala niedostepna"
 $description = "Test room not available"
-$startDateTime = "2026-06-16T10:00Z"
-$endDateTime = "2026-06-16T11:00Z"
+$startDateTime = "2026-07-16T10:00Z"
+$endDateTime = "2026-07-16T11:00Z"
 
 $signature = Get-HmacSignature `
   -RequestId $requestId `
